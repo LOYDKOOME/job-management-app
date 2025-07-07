@@ -84,19 +84,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import os
+import dj_database_url
+
+# Default local development DB config (used if DATABASE_URL not set)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'job_db',
-        'USER': 'postgres',
-        'PASSWORD': 'loyd',
+        'NAME': 'job_db',         # Change if different locally
+        'USER': 'postgres',       # Change if different locally
+        'PASSWORD': 'loyd',       # Change if different locally
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
-
-
-
+# Override with DATABASE_URL if it exists (Render/Production)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True  # Add this for cloud-hosted DBs
+    )
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

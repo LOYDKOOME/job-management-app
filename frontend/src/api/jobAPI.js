@@ -1,13 +1,9 @@
-<<<<<<< HEAD
-// frontend/src/api/jobAPI.js
-import axios from "axios";
 
-const API_URL = "https://job-management-api.onrender.com/api/jobs/";
-=======
+// frontend/src/api/jobAPI.
 // src/api/jobAPI.js
 import axios from "axios";
+const BASE_URL = 'https://job-backend-0jq9.onrender.com/api';
 
-const API_URL = "https://job-backend-0jq9.onrender.com/api/jobs/";
 >>>>>>> d139959 (Connect frontend to deployed backend)
 
 export const fetchJobs = (params) => axios.get(API_URL, { params });

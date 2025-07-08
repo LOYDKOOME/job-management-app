@@ -1,18 +1,9 @@
-
-// frontend/src/api/jobAPI.
-// src/api/jobAPI.js
 import axios from "axios";
-const BASE_URL = 'https://job-backend-0jq9.onrender.com/api';
 
->>>>>>> d139959 (Connect frontend to deployed backend)
+const BASE_URL = "http://127.0.0.1:8000/api/jobs/";
 
-export const fetchJobs = (params) => axios.get(API_URL, { params });
-
-export const fetchJobById = (id) => axios.get(`${API_URL}${id}/`);
-
-export const updateJob = (id, job) => axios.put(`${API_URL}${id}/`, job);
-
-export const deactivateJob = (id) => axios.patch(`${API_URL}${id}/deactivate/`);
-
-export const createJob = (job) =>
-  axios.post("https://job-backend-0jq9.onrender.com/api/jobs/", job);
+export const fetchJobs = () => axios.get(BASE_URL);
+export const fetchJobById = (id) => axios.get(`${BASE_URL}${id}/`);
+export const createJob = (jobData) => axios.post(BASE_URL, jobData);
+export const updateJob = (id, jobData) => axios.put(`${BASE_URL}${id}/`, jobData);
+export const deactivateJob = (id) => axios.patch(`${BASE_URL}${id}/`, { status: "inactive" });

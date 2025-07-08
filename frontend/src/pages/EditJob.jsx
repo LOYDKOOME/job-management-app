@@ -2,154 +2,143 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchJobById, updateJob } from "../api/jobAPI";
 
-export default function EditJob() {
+const EditJob = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [job, setJob] = useState(null);
+  const [form, setForm] = useState(null);
+  const [error, setError] = useState("");
 
   const locations = ["Nairobi", "Mombasa", "Kisumu", "Remote"];
   const companies = ["Google", "Safaricom", "Equity Bank", "KRA"];
-  const statusOptions = ["active", "inactive"];
 
   useEffect(() => {
     const loadJob = async () => {
-      const res = await fetchJobById(id);
-      setJob(res.data);
+      try {
+        const res = await fetchJobById(id);
+        setForm(res.data);
+      } catch (err) {
+        console.error("❌ Error loading job:", err);
+        setError("Failed to load job. Make sure the job ID exists.");
+      }
     };
+
     loadJob();
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setJob({ ...job, [name]: value });
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isNaN(job.salary)) {
+    if (isNaN(form.salary)) {
       alert("Salary must be a number");
       return;
     }
-    await updateJob(id, job);
-    alert("Job updated successfully!");
-    navigate("/");
+
+    try {
+      await updateJob(id, form);
+      alert("✅ Job updated successfully!");
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Failed to update job:", err);
+      alert("Failed to update job.");
+    }
   };
 
-  if (!job) return <p className="p-4 text-center">Loading...</p>;
+  if (error) {
+    return <div className="text-red-600 p-4 text-center">{error}</div>;
+  }
+
+  if (!form) {
+    return <div className="text-center p-4">⏳ Loading job details...</div>;
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="p-4 max-w-xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Edit Job</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Job Title */}
-        <div>
-          <label className="block font-semibold">Job Title</label>
-          <input
-            name="title"
-            value={job.title}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Title"
-            required
-          />
-        </div>
+        <input
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="Job Title"
+          className="w-full p-2 border"
+          required
+        />
 
-        {/* Company Name Dropdown */}
-        <div>
-          <label className="block font-semibold">Company Name</label>
-          <select
-            name="company_name"
-            value={job.company_name}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            required
-          >
-            <option value="">Select Company</option>
-            {companies.map((company) => (
-              <option key={company} value={company}>
-                {company}
-              </option>
-            ))}
-          </select>
-        </div>
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Description"
+          className="w-full p-2 border"
+          required
+        />
 
-        {/* Location Dropdown */}
-        <div>
-          <label className="block font-semibold">Location</label>
-          <select
-            name="location"
-            value={job.location}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            required
-          >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          name="company_name"
+          value={form.company_name}
+          onChange={handleChange}
+          className="w-full p-2 border"
+          required
+        >
+          <option value="">Select Company</option>
+          {companies.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
 
-        {/* Salary */}
-        <div>
-          <label className="block font-semibold">Salary</label>
-          <input
-            name="salary"
-            type="number"
-            value={job.salary}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Salary"
-            required
-          />
-        </div>
+        <select
+          name="location"
+          value={form.location}
+          onChange={handleChange}
+          className="w-full p-2 border"
+          required
+        >
+          <option value="">Select Location</option>
+          {locations.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
 
-        {/* Description */}
-        <div>
-          <label className="block font-semibold">Description</label>
-          <textarea
-            name="description"
-            value={job.description}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Description"
-            rows="4"
-            required
-          />
-        </div>
+        <input
+          name="salary"
+          type="number"
+          value={form.salary}
+          onChange={handleChange}
+          placeholder="Salary"
+          className="w-full p-2 border"
+          required
+        />
 
-        {/* Status Dropdown */}
-        <div>
-          <label className="block font-semibold">Status</label>
-          <select
-            name="status"
-            value={job.status}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            required
-          >
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          name="status"
+          value={form.status}
+          onChange={handleChange}
+          className="w-full p-2 border"
+          required
+        >
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
 
-        {/* Buttons */}
         <div className="flex gap-4 mt-4">
           <button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Update Job
+            Save Changes
           </button>
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            className="bg-gray-400 text-white px-4 py-2 rounded"
           >
             Cancel
           </button>
@@ -157,4 +146,6 @@ export default function EditJob() {
       </form>
     </div>
   );
-}
+};
+
+export default EditJob;

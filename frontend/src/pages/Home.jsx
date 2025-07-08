@@ -1,147 +1,113 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchJobs, deactivateJob } from "../api/jobAPI";
 
-export default function Home() {
+const Home = () => {
   const [jobs, setJobs] = useState([]);
-  const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 4;
-  const [title, setTitle] = useState("");
-  const [company, setCompany] = useState("");
-  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
 
   const loadJobs = async () => {
-    const params = {};
-    if (title) params.title = title;
-    if (company) params.company = company;
-    if (location) params.location = location;
-    const res = await fetchJobs(params);
-    setJobs(res.data);
+    try {
+      const res = await fetchJobs();
+      setJobs(res.data);
+    } catch (err) {
+      console.error("❌ Failed to load jobs:", err);
+      setError("Failed to fetch job listings. Please try again.");
+    }
   };
 
   useEffect(() => {
     loadJobs();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    loadJobs();
-    setCurrentPage(1);
-  };
-
   const handleDeactivate = async (id) => {
-    await deactivateJob(id);
-    loadJobs();
+    if (!window.confirm("Are you sure you want to deactivate this job?"))
+      return;
+    try {
+      await deactivateJob(id);
+      loadJobs();
+    } catch (err) {
+      console.error("❌ Failed to deactivate job:", err);
+      alert("Failed to deactivate job.");
+    }
   };
 
-  // Filter after fetching
-  const filteredJobs = jobs.filter(
-    (job) =>
-      job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.company_name.toLowerCase().includes(search.toLowerCase())
-  );
+  if (error) {
+    return (
+      <div className="text-red-600 p-4 text-center font-medium">{error}</div>
+    );
+  }
 
-  // Pagination logic
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  if (jobs.length === 0) {
+    return (
+      <div className="text-center p-4 text-gray-700 font-medium">
+        No jobs found.
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Active Jobs</h1>
-
-      {/* 🔍 Search bar for filtering */}
-      <form
-        onSubmit={handleSearch}
-        className="flex flex-col md:flex-row gap-2 mb-4"
-      >
-        <input
-          type="text"
-          placeholder="Filter by title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="p-2 border rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Filter by company"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          className="p-2 border rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Filter by location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="p-2 border rounded w-full"
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          type="submit"
+    <div className="p-4 max-w-5xl mx-auto font-sans">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+        Job Listings
+      </h1>
+      <div className="flex justify-end mb-4">
+        <Link
+          to="/jobs/create"
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded"
         >
-          Apply Filters
-        </button>
-      </form>
-
-      {/* 🔎 Local search within results */}
-      <input
-        type="text"
-        placeholder="Search title or company name..."
-        className="border px-4 py-2 mb-4 w-full rounded"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setCurrentPage(1);
-        }}
-      />
-
-      {/* 🧾 Job Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {currentJobs.map((job) => (
-          <div key={job.id} className="border p-4 rounded shadow">
-            <h2 className="text-xl font-semibold">{job.title}</h2>
-            <p>
-              {job.company_name} – {job.location}
-            </p>
-            <p className="text-gray-600">Salary: ${job.salary}</p>
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={() => handleDeactivate(job.id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-              >
-                Deactivate
-              </button>
-              <a
-                href={`/edit/${job.id}`}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-              >
-                Edit
-              </a>
-            </div>
-          </div>
-        ))}
+          + Post Job
+        </Link>
       </div>
-
-      {/* 📄 Pagination */}
-      {totalPages > 1 && (
-        <div className="flex gap-2 mt-6 justify-center">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              {i + 1}
-            </button>
+      <table className="w-full border border-gray-300 text-left text-sm font-medium text-gray-800">
+        <thead className="bg-gray-100 text-base text-gray-700 uppercase">
+          <tr>
+            <th className="p-3 border">Title</th>
+            <th className="p-3 border">Company</th>
+            <th className="p-3 border">Location</th>
+            <th className="p-3 border">Salary</th>
+            <th className="p-3 border">Status</th>
+            <th className="p-3 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr key={job.id} className="border-t hover:bg-gray-50 transition">
+              <td className="p-3 border font-semibold">{job.title}</td>
+              <td className="p-3 border">{job.company_name}</td>
+              <td className="p-3 border">{job.location}</td>
+              <td className="p-3 border">Ksh {job.salary.toLocaleString()}</td>
+              <td className="p-3 border capitalize">
+                <span
+                  className={`px-2 py-1 rounded text-white text-xs ${
+                    job.status === "active" ? "bg-green-600" : "bg-red-500"
+                  }`}
+                >
+                  {job.status}
+                </span>
+              </td>
+              <td className="p-3 border space-x-2">
+                <Link
+                  to={`/jobs/edit/${job.id}`}
+                  className="bg-blue-600 text-white px-3 py-1 rounded font-medium"
+                >
+                  Edit
+                </Link>
+                {job.status === "active" && (
+                  <button
+                    onClick={() => handleDeactivate(job.id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded font-medium"
+                  >
+                    Deactivate
+                  </button>
+                )}
+              </td>
+            </tr>
           ))}
-        </div>
-      )}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
+
+export default Home;

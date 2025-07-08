@@ -16,8 +16,6 @@ function App() {
           <Route path="/jobs/create" element={<CreateJob />} />
           <Route path="/jobs/edit/:id" element={<EditJob />} />
           <Route path="/jobs/:id" element={<JobDetail />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/edit/:id" element={<EditJob />} />
         </Routes>
       </div>
     </Router>

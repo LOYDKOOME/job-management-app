@@ -1,16 +1,9 @@
 import axios from "axios";
-
 const BASE_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/jobs/";
-
+  process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/api/jobs/";
 export const fetchJobs = () => axios.get(BASE_URL);
-
 export const fetchJobById = (id) => axios.get(`${BASE_URL}${id}/`);
-
-export const createJob = (jobData) => axios.post(BASE_URL, jobData);
-
-export const updateJob = (id, jobData) =>
-  axios.put(`${BASE_URL}${id}/`, jobData);
-
+export const createJob = (data) => axios.post(BASE_URL, data);
+export const updateJob = (id, data) => axios.put(`${BASE_URL}${id}/`, data);
 export const deactivateJob = (id) =>
   axios.patch(`${BASE_URL}${id}/`, { status: "inactive" });

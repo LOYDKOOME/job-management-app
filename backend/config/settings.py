@@ -52,7 +52,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in dev, restrict in production
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://job-management-app-two.vercel.app"
+    "https://job-management-etfoqi8cd-loydkoomes-projects.vercel.app"
 ]
 
 # URL config
